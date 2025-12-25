@@ -128,9 +128,15 @@ jobs:
         TAG="${{ steps.latest-version.outputs.LATEST_TAG }}"
         git config --global user.name "github-actions"
         git config --global user.email "github-actions@github.com"
-        git commit -m "chore: add translate for ${{ steps.latest-version.outputs.LATEST_TAG }}"
-        git tag $TAG
-        git push origin $TAG
+        
+        if git diff --cached --quiet; then
+          echo "没有更改，跳过提交"
+        else
+          git commit -m "chore: add translate for ${{ steps.latest-version.outputs.LATEST_TAG }}"
+          git tag $TAG
+          git push origin $TAG
+        fi
+        
       working-directory: /home/runner/work/Rebuild-n8n/Rebuild-n8n/n8n-i18n-chinese
 
     - name: 创建 GitHub Release
