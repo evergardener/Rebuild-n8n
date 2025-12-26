@@ -7,7 +7,7 @@ index caa9baf612..eb3ae2d8a0 100644
  
  	isLicensed(feature: BooleanLicenseFeature) {
 -		return this.manager?.hasFeatureEnabled(feature) ?? false;
-+		if (feature === LICENSE_FEATURES.SHOW_NON_PROD_BANNER) {
++		if (feature === LICENSE_FEATURES.SHOW_NON_PROD_BANNER || feature === LICENSE_FEATURES.API_DISABLED) {
 +			return false;
 +		}
 +		return true;
