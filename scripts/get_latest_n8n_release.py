@@ -3,16 +3,21 @@ import requests
 import re
 import sys
 import time
+import os
 from packaging import version
 
 MAX_RETRIES = 3
+
+token = os.getenv("GITHUB_TOKEN")
+print("Token存在" if token else "")
+headers = {"Authorization": f"Bearer {token}"}
 
 def get_latest_version():
     url = "https://api.github.com/repos/n8n-io/n8n/releases"
     response = None
     for attempt in range(MAX_RETRIES):
         try:
-            response = requests.get(url)
+            response = requests.get(url, headers=headers)
             response.raise_for_status()
             break
         except requests.exceptions.RequestException:
