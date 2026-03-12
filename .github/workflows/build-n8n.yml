@@ -88,7 +88,7 @@ jobs:
           for patch in source-repo/patches/*.patch; do
             if [ -f "$patch" ]; then
               echo "Applying: $patch"
-              git apply "$patch"
+              git apply --verbose "$patch" || (echo "Patch failed: $patch" && cat "$patch")
             fi
           done
 
