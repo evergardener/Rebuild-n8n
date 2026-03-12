@@ -1,12 +1,12 @@
 diff --git a/packages/frontend/@n8n/i18n/src/index.ts b/packages/frontend/@n8n/i18n/src/index.ts
-index df1db3e994..0f2a98ce9a 100644
+index df1db3e994..6ec77c1443 100644
 --- a/packages/frontend/@n8n/i18n/src/index.ts
 +++ b/packages/frontend/@n8n/i18n/src/index.ts
 @@ -4,6 +4,7 @@ import { ref } from 'vue';
  import { createI18n } from 'vue-i18n';
  
  import englishBaseText from './locales/en.json';
-+import chineseBaseText from './locales/zh.json';	
++import chineseBaseText from './locales/zh.json';
  import type { BaseTextKey, LocaleMessages, INodeTranslationHeaders } from './types';
  import {
  	deriveMiddleKey,

@@ -7,6 +7,11 @@
 ![Last Commit](https://img.shields.io/github/last-commit/AliverAnme/Rebuild-n8n)
 
 ---
+## 使用
+
+添加环境变量指明`N8N_DEFAULT_LOCALE=zh`
+
+注：2.7.3可用AiBuilder
 
 ## 📌 简介
 

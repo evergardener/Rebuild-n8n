@@ -30,6 +30,8 @@ jobs:
         run: |
           pip install requests packaging
           python scripts/get_latest_n8n_release.py
+        env:
+          GITHUB_TOKEN: ${{ secrets.GHCR_TOKEN }}
 
       - name: 输出最新版本
         run: |

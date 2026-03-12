@@ -1,8 +1,8 @@
 diff --git a/packages/cli/src/license.ts b/packages/cli/src/license.ts
-index caa9baf612..eb3ae2d8a0 100644
+index 196528fd33..ee74760626 100644
 --- a/packages/cli/src/license.ts
 +++ b/packages/cli/src/license.ts
-@@ -250,7 +250,10 @@ export class License implements LicenseProvider {
+@@ -252,7 +252,10 @@ export class License implements LicenseProvider {
  	}
  
  	isLicensed(feature: BooleanLicenseFeature) {
@@ -14,7 +14,7 @@ index caa9baf612..eb3ae2d8a0 100644
  	}
  
  	/** @deprecated Use `LicenseState.isDynamicCredentialsLicensed` instead. */
-@@ -378,7 +381,21 @@ export class License implements LicenseProvider {
+@@ -380,7 +383,17 @@ export class License implements LicenseProvider {
  	}
  
  	getValue<T extends keyof FeatureReturnType>(feature: T): FeatureReturnType[T] {
@@ -29,67 +29,7 @@ index caa9baf612..eb3ae2d8a0 100644
 +		}
 +
 +    	// Return true for all boolean features
-+		if (Object.values(LICENSE_FEATURES).includes(feature as any)) {
-+			return true as FeatureReturnType[T];
-+		}
-+
 +		return true as FeatureReturnType[T];
  	}
  
  	getManagementJwt(): string {
-@@ -416,39 +433,36 @@ export class License implements LicenseProvider {
- 
- 	/** @deprecated Use `LicenseState` instead. */
- 	getUsersLimit() {
--		return this.getValue(LICENSE_QUOTAS.USERS_LIMIT) ?? UNLIMITED_LICENSE_QUOTA;
-+		return UNLIMITED_LICENSE_QUOTA;
- 	}
- 
- 	/** @deprecated Use `LicenseState` instead. */
- 	getTriggerLimit() {
--		return this.getValue(LICENSE_QUOTAS.TRIGGER_LIMIT) ?? UNLIMITED_LICENSE_QUOTA;
-+		return UNLIMITED_LICENSE_QUOTA;
- 	}
- 
- 	/** @deprecated Use `LicenseState` instead. */
- 	getVariablesLimit() {
--		return this.getValue(LICENSE_QUOTAS.VARIABLES_LIMIT) ?? UNLIMITED_LICENSE_QUOTA;
-+		return UNLIMITED_LICENSE_QUOTA;
- 	}
- 
- 	/** @deprecated Use `LicenseState` instead. */
- 	getAiCredits() {
--		return this.getValue(LICENSE_QUOTAS.AI_CREDITS) ?? 0;
-+		return UNLIMITED_LICENSE_QUOTA;
- 	}
- 
- 	/** @deprecated Use `LicenseState` instead. */
- 	getWorkflowHistoryPruneLimit() {
--		return (
--			this.getValue(LICENSE_QUOTAS.WORKFLOW_HISTORY_PRUNE_LIMIT) ??
--			DEFAULT_WORKFLOW_HISTORY_PRUNE_LIMIT
--		);
-+		return UNLIMITED_LICENSE_QUOTA;
- 	}
- 
- 	/** @deprecated Use `LicenseState` instead. */
- 	getTeamProjectLimit() {
--		return this.getValue(LICENSE_QUOTAS.TEAM_PROJECT_LIMIT) ?? 0;
-+		return UNLIMITED_LICENSE_QUOTA;
- 	}
- 
- 	getPlanName(): string {
--		return this.getValue('planName') ?? 'Community';
-+		return 'Enterprise';
- 	}
- 
- 	getInfo(): string {
-@@ -461,7 +475,7 @@ export class License implements LicenseProvider {
- 
- 	/** @deprecated Use `LicenseState` instead. */
- 	isWithinUsersLimit() {
--		return this.getUsersLimit() === UNLIMITED_LICENSE_QUOTA;
-+		return UNLIMITED_LICENSE_QUOTA;
- 	}
- 
- 	@OnLeaderTakeover()
