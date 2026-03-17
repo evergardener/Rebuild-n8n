@@ -447,7 +447,6 @@
     "chatHub.agent.editor.delete.cancel.button": "取消",
     "chatHub.agent.editor.error.load": "无法加载代理",
     "chatHub.agent.editor.files.label": "文件",
-    "chatHub.agent.editor.files.indexed": "可用于搜索",
     "chatHub.agent.editor.files.embeddingMismatch.tooltip": "此文件已使用 {fileProvider} 嵌入模型建立索引。由于当前嵌入模型为 {currentProvider}，它可能无法被搜索。",
     "chatHub.agent.editor.files.semanticSearchNotReady.tooltip": "语义搜索未配置。此文件可能无法被搜索。",
     "chatHub.agent.editor.error.save": "保存代理失败",
