@@ -1020,7 +1020,7 @@
     "credentialEdit.credentialEdit.confirmMessage.beforeClose2.confirmButtonText": "继续编辑",
     "credentialEdit.credentialEdit.confirmMessage.beforeClose2.headline": "不连接直接关闭？",
     "credentialEdit.credentialEdit.confirmMessage.beforeClose2.message": "您需要连接您的凭据才能使其正常工作",
-    "credentialEdit.credentialEdit.confirmMessage.deleteCredential.cancelButtonText": "好的，我明白了。请提供需要翻译的英文文本。",
+    "credentialEdit.credentialEdit.confirmMessage.deleteCredential.cancelButtonText": "好的，我明白了",
     "credentialEdit.credentialEdit.confirmMessage.deleteCredential.confirmButtonText": "是的，删除",
     "credentialEdit.credentialEdit.confirmMessage.deleteCredential.headline": "删除凭据？",
     "credentialEdit.credentialEdit.confirmMessage.deleteCredential.message": "您确定要删除“{savedCredentialName}”吗？这可能会破坏使用它的任何工作流。",
