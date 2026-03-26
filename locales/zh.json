@@ -1899,7 +1899,6 @@
     "nodeCredentials.createNew": "创建新凭据",
     "nodeCredentials.createNew.permissionDenied": "您当前的角色不允许您创建凭据",
     "nodeCredentials.credentialFor": "{credentialType} 的凭证",
-    "nodeCredentials.credentialsLabel": "用于连接的凭据",
     "nodeCredentials.credentialsLabelShort": "凭据",
     "nodeCredentials.issues": "问题",
     "nodeCredentials.selectCredential": "选择凭据",
