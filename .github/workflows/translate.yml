@@ -28,6 +28,11 @@ jobs:
       with:
         path: ./temp-get-latest
 
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+
     - name: 设置 Python
       if: ${{ !github.event.inputs.tag || github.event.inputs.tag == '' }}
       uses: actions/setup-python@v5
@@ -102,8 +107,8 @@ jobs:
 
     - name: Translate New Strings
       if: steps.check_tag.outputs.exists == 'false'
-      run: pnpm install && node translate.js
-      working-directory: /home/runner/work/Rebuild-n8n/Rebuild-n8n/n8n-i18n-chinese/scripts
+      run: pnpm install && node scripts/translate.js
+      working-directory: /home/runner/work/Rebuild-n8n/Rebuild-n8n/n8n-i18n-chinese
       env:
         OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         OPENAI_API_BASE: ${{ vars.OPENAI_API_BASE }}
