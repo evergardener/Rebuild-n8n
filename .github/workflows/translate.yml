@@ -107,7 +107,7 @@ jobs:
 
     - name: Translate New Strings
       if: steps.check_tag.outputs.exists == 'false'
-      run: pnpm install && node scripts/translate.js
+      run: pnpm install && cd scripts && node translate.js
       working-directory: /home/runner/work/Rebuild-n8n/Rebuild-n8n/n8n-i18n-chinese
       env:
         OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
