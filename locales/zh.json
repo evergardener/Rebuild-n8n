@@ -1203,7 +1203,6 @@
     "experiments.resourceCenter.sidebar": "资源",
     "experiments.resourceCenter.template.setupTime": "{minutes} 分钟设置完成",
     "experiments.resourceCenter.title": "资源",
-    "experiments.resourceCenter.tooltip.text": "获取灵感并通过用例学习",
     "experiments.resourceCenter.video.level": "等级：{level}",
     "experiments.templatesDataQuality.modalTitle": "精选模板",
     "error": "错误",
