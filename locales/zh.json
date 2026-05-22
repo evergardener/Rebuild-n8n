@@ -1292,7 +1292,6 @@
     "agentSessions.actions": "操作",
     "agentSessions.empty": "无代理会话",
     "agentSessions.loadMore": "加载更多",
-    "agentSessions.loadedAll": "没有更多会话可获取",
     "agentSessions.deleteConfirm.headline": "删除会话？",
     "agentSessions.deleteConfirm.message": "这将删除会话及其所有执行记录。此操作无法撤销。",
     "agentSessions.deleteConfirm.confirmButtonText": "是的，删除",
