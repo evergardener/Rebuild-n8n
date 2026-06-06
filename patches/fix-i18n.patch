@@ -4,14 +4,14 @@ index df1db3e994..6ec77c1443 100644
 +++ b/packages/frontend/@n8n/i18n/src/index.ts
 @@ -4,6 +4,7 @@ import { ref } from 'vue';
  import { createI18n } from 'vue-i18n';
- 
+
  import englishBaseText from './locales/en.json';
 +import chineseBaseText from './locales/zh.json';
  import type { BaseTextKey, LocaleMessages, INodeTranslationHeaders } from './types';
  import {
  	deriveMiddleKey,
 @@ -16,9 +17,9 @@ export type * from './types';
- 
+
  export const i18nInstance = createI18n({
  	legacy: false,
 -	locale: 'en',
@@ -21,4 +21,4 @@ index df1db3e994..6ec77c1443 100644
 +	messages: { en: englishBaseText, zh: chineseBaseText },
  	warnHtmlMessage: false,
  });
- 
+
