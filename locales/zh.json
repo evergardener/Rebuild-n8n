@@ -3912,7 +3912,6 @@
     "workflows.item.availableInMCP": "可在 MCP 中使用",
     "workflows.dynamic.tooltip": "此工作流根据执行者实时解析凭据。",
     "workflows.dynamic.tooltipTitle": "????",
-    "workflows.dynamic.resolverMissing": "???????",
     "workflows.dependencies.tooltip.workflow": "?????????",
     "workflows.dependencies.tooltip.credential": "????????",
     "workflows.dependencies.tooltip.dataTable": "?????????",
