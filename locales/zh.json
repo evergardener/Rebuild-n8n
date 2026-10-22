@@ -1048,7 +1048,6 @@
     "credentialEdit.credentialSharing.list.delete.confirm.message": "这可能会破坏任何使用了此凭据的工作流",
     "credentialEdit.credentialSharing.list.delete.confirm.confirmButtonText": "移除",
     "credentialEdit.credentialSharing.list.delete.confirm.cancelButtonText": "取消",
-    "credentialEdit.credentialSharing.role.user": "用户",
     "credentialSelectModal.addNewCredential": "添加新凭据",
     "credentialSelectModal.continue": "继续",
     "credentialSelectModal.searchForApp": "搜索应用...",
