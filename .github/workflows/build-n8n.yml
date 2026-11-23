@@ -97,12 +97,58 @@ jobs:
 
       - name: 应用patch
         run: |
-          for patch in source-repo/patches/*.patch; do
-            if [ -f "$patch" ]; then
-              echo "Applying: $patch"
-              git apply --verbose "$patch" || (echo "Patch failed: $patch" && cat "$patch")
+          set -euo pipefail
+          shopt -s nullglob
+          patches=(source-repo/patches/*.patch)
+          if [ ${#patches[@]} -eq 0 ]; then
+            echo "::error::source-repo/patches 下没有 .patch 文件"
+            exit 1
+          fi
+          for patch in "${patches[@]}"; do
+            echo "Applying: $patch"
+            if ! git apply --verbose "$patch"; then
+              echo "::error::Patch 应用失败: $patch"
+              cat "$patch"
+              exit 1
             fi
           done
+
+      - name: 解析上游基础镜像
+        id: base-images
+        # docker/images/n8n/Dockerfile 与 docker/images/runners/Dockerfile 的基础镜像
+        # 没有默认值，全部由上游 docker/docker-bake.hcl 的变量提供。不传 build-arg 时
+        # buildx 报 "base name (${BUILDER_IMAGE}) should not be blank"。
+        # 这里按上游自己的做法从 bake 文件读取变量默认值（上游 scripts/dockerize-n8n.mjs
+        # 的 podman 路径用同一个正则读 pin），因此上游升级基础镜像时本文件无需改动。
+        run: |
+          python3 - <<'PY'
+          import os, re, sys
+
+          BAKE_FILE = 'docker/docker-bake.hcl'
+          try:
+              with open(BAKE_FILE, encoding='utf-8') as handle:
+                  hcl = handle.read()
+          except OSError:
+              sys.exit(f'找不到 {BAKE_FILE}：无法从上游 bake 文件读取基础镜像')
+
+          def pin(name):
+              match = re.search(r'^variable "%s"\s*\{\s*default = "([^"]+)"' % re.escape(name), hcl, re.M)
+              if not match:
+                  sys.exit(f'{BAKE_FILE} 中没有 {name} 的字符串默认值')
+              return match.group(1)
+
+          pins = {
+              'builder_image': pin('BUILDER_IMAGE'),
+              'runtime_image': pin('RUNTIME_IMAGE'),
+              'python_image': pin('PYTHON_IMAGE'),
+              'alpine_image': pin('ALPINE_IMAGE'),
+          }
+          for key, value in pins.items():
+              print(f'{key}={value}')
+          with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as output:
+              for key, value in pins.items():
+                  output.write(f'{key}={value}\n')
+          PY
 
       - name: 读取package.json
         id: package
@@ -191,6 +237,9 @@ jobs:
           context: .
           file: docker/images/n8n/Dockerfile
           platforms: linux/amd64,linux/arm64
+          build-args: |
+            BUILDER_IMAGE=${{ steps.base-images.outputs.builder_image }}
+            RUNTIME_IMAGE=${{ steps.base-images.outputs.runtime_image }}
           push: true
           tags: |
             ghcr.io/${{ steps.lowercase.outputs.owner }}/n8n:${{ steps.package.outputs.image_tag }}
@@ -205,6 +254,10 @@ jobs:
           context: .
           file: docker/images/runners/Dockerfile
           platforms: linux/amd64,linux/arm64
+          build-args: |
+            NODE_IMAGE=${{ steps.base-images.outputs.builder_image }}
+            PYTHON_IMAGE=${{ steps.base-images.outputs.python_image }}
+            ALPINE_IMAGE=${{ steps.base-images.outputs.alpine_image }}
           push: true
           tags: |
             ghcr.io/${{ steps.lowercase.outputs.owner }}/runners:${{ steps.package.outputs.image_tag }}
