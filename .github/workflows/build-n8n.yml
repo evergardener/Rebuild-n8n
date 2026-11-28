@@ -115,38 +115,103 @@ jobs:
 
       - name: 解析上游基础镜像
         id: base-images
-        # docker/images/n8n/Dockerfile 与 docker/images/runners/Dockerfile 的基础镜像
-        # 没有默认值，全部由上游 docker/docker-bake.hcl 的变量提供。不传 build-arg 时
-        # buildx 报 "base name (${BUILDER_IMAGE}) should not be blank"。
-        # 这里按上游自己的做法从 bake 文件读取变量默认值（上游 scripts/dockerize-n8n.mjs
-        # 的 podman 路径用同一个正则读 pin），因此上游升级基础镜像时本文件无需改动。
+        # 基础镜像由上游 docker/docker-bake.hcl 提供，Dockerfile 里没有默认值：不传
+        # build-arg 时 buildx 报 "base name (${BUILDER_IMAGE}) should not be blank"。
+        # 这里不假设 build-arg 对应哪个变量，而是读 target "n8n" / "runners" 的 args
+        # 块，把每个 build-arg 解析成它的取值（字面量或变量默认值）。上游换对应关系时
+        # 本步骤直接失败，而不是推出一个用错基础镜像的镜像：n8n 3.4.1 把 n8n 的
+        # BUILDER_IMAGE 从 BUILDER_IMAGE 改成 N8N_BUILDER_IMAGE，用错会从 stock node
+        # 复制来一个缺 libatomic、V8 也没有 -n8n.N 后缀的 node（Dockerfile 第 67 行
+        # 的校验会以 exit 127 失败）。
         run: |
           python3 - <<'PY'
           import os, re, sys
 
           BAKE_FILE = 'docker/docker-bake.hcl'
+
+          # target -> 本 workflow 要传给该镜像的 build-arg
+          WANTED = {
+              'n8n': ['BUILDER_IMAGE', 'RUNTIME_IMAGE', 'ENABLE_POINTER_COMPRESSION'],
+              'runners': ['NODE_IMAGE', 'PYTHON_IMAGE', 'ALPINE_IMAGE'],
+          }
+          # 允许缺失的 build-arg -> 缺失时的取值（同 Dockerfile 里 ARG 的默认值）
+          OPTIONAL = {'ENABLE_POINTER_COMPRESSION': 'false'}
+
           try:
               with open(BAKE_FILE, encoding='utf-8') as handle:
                   hcl = handle.read()
           except OSError:
               sys.exit(f'找不到 {BAKE_FILE}：无法从上游 bake 文件读取基础镜像')
 
-          def pin(name):
-              match = re.search(r'^variable "%s"\s*\{\s*default = "([^"]+)"' % re.escape(name), hcl, re.M)
+          def fail(message):
+              sys.exit(f'{BAKE_FILE}: {message}')
+
+          def braced(text, start):
+              """返回 start（'{' 之后）到配对 '}' 之前的文本。"""
+              depth = 1
+              pos = start
+              while pos < len(text) and depth:
+                  if text[pos] == '{':
+                      depth += 1
+                  elif text[pos] == '}':
+                      depth -= 1
+                  pos += 1
+              if depth:
+                  fail('大括号不配对')
+              return text[start:pos - 1]
+
+          def target_block(name):
+              match = re.search(r'^target\s+"%s"\s*\{' % re.escape(name), hcl, re.M)
               if not match:
-                  sys.exit(f'{BAKE_FILE} 中没有 {name} 的字符串默认值')
+                  fail(f'没有 target "{name}" 块')
+              return braced(hcl, match.end())
+
+          def target_args(name):
+              body = target_block(name)
+              match = re.search(r'\bargs\s*=\s*\{', body)
+              if not match:
+                  fail(f'target "{name}" 没有 args 块')
+              args = {}
+              for line in braced(body, match.end()).splitlines():
+                  line = line.split('#', 1)[0].strip().rstrip(',')
+                  if not line or '=' not in line:
+                      continue
+                  key, _, value = line.partition('=')
+                  args[key.strip()] = value.strip()
+              return args
+
+          def variable_default(name):
+              match = re.search(r'^variable\s+"%s"\s*\{\s*default\s*=\s*"([^"]*)"' % re.escape(name), hcl, re.M)
+              if not match:
+                  fail(f'变量 {name} 没有字符串默认值')
               return match.group(1)
 
-          pins = {
-              'builder_image': pin('BUILDER_IMAGE'),
-              'runtime_image': pin('RUNTIME_IMAGE'),
-              'python_image': pin('PYTHON_IMAGE'),
-              'alpine_image': pin('ALPINE_IMAGE'),
-          }
-          for key, value in pins.items():
+          resolved = {}
+          for target, wanted in WANTED.items():
+              args = target_args(target)
+              for arg in wanted:
+                  key = f'{target}_{arg.lower()}'
+                  raw = args.get(arg)
+                  if raw is None:
+                      if arg in OPTIONAL:
+                          resolved[key] = OPTIONAL[arg]
+                          continue
+                      fail(f'target "{target}" 的 args 里没有 {arg}')
+                  literal = re.fullmatch(r'"([^"]*)"', raw)
+                  if literal:
+                      value = literal.group(1)
+                  elif re.fullmatch(r'[A-Za-z_][A-Za-z0-9_]*', raw):
+                      value = variable_default(raw)
+                  else:
+                      fail(f'target "{target}" 的 {arg} = {raw} 不是字符串字面量或变量名')
+                  if not value:
+                      fail(f'target "{target}" 的 {arg} 解析为空')
+                  resolved[key] = value
+
+          for key, value in resolved.items():
               print(f'{key}={value}')
           with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as output:
-              for key, value in pins.items():
+              for key, value in resolved.items():
                   output.write(f'{key}={value}\n')
           PY
 
@@ -238,8 +303,9 @@ jobs:
           file: docker/images/n8n/Dockerfile
           platforms: linux/amd64,linux/arm64
           build-args: |
-            BUILDER_IMAGE=${{ steps.base-images.outputs.builder_image }}
-            RUNTIME_IMAGE=${{ steps.base-images.outputs.runtime_image }}
+            BUILDER_IMAGE=${{ steps.base-images.outputs.n8n_builder_image }}
+            RUNTIME_IMAGE=${{ steps.base-images.outputs.n8n_runtime_image }}
+            ENABLE_POINTER_COMPRESSION=${{ steps.base-images.outputs.n8n_enable_pointer_compression }}
           push: true
           tags: |
             ghcr.io/${{ steps.lowercase.outputs.owner }}/n8n:${{ steps.package.outputs.image_tag }}
@@ -255,9 +321,9 @@ jobs:
           file: docker/images/runners/Dockerfile
           platforms: linux/amd64,linux/arm64
           build-args: |
-            NODE_IMAGE=${{ steps.base-images.outputs.builder_image }}
-            PYTHON_IMAGE=${{ steps.base-images.outputs.python_image }}
-            ALPINE_IMAGE=${{ steps.base-images.outputs.alpine_image }}
+            NODE_IMAGE=${{ steps.base-images.outputs.runners_node_image }}
+            PYTHON_IMAGE=${{ steps.base-images.outputs.runners_python_image }}
+            ALPINE_IMAGE=${{ steps.base-images.outputs.runners_alpine_image }}
           push: true
           tags: |
             ghcr.io/${{ steps.lowercase.outputs.owner }}/runners:${{ steps.package.outputs.image_tag }}
